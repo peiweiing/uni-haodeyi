@@ -94,30 +94,25 @@
 				]
 			}
 		},
-		onLoad() {
+		onShow() {
 			var that = this;
-			uni.getStorage({
-			    key: 'token',
-			    success: function (res) {
-					var getres = res.data;
-					uni.request({
-						url: App.getEntrusBuyList,
-						method: 'POST',
-						header: {'Authorization':getres},
-						success: (res) => {
-							if(res.data.data.length){
-								that.debool=true;
-							}else{
-								that.debool=false;
-							}
-							console.log(res.data);
-							that.detail=res.data.data;
-						},
-						fail:(err)=>{
-							that.debool=false;
-						}
-					});
-			    }
+			
+			this.sendRequest({
+				url :App.getEntrusBuyList,
+				method:'POST',
+				success : function(res){
+					console.log("getchannel success:" + JSON.stringify(res));
+					if(res.data.length){
+						that.debool=true;
+					}else{
+						that.debool=false;
+					}
+					that.detail=res.data;
+				},
+				fail:function(e){
+					console.log("getchannel  fail:" + JSON.stringify(e));
+					that.debool=false;
+				}
 			});
 		},
 		methods: {
@@ -125,21 +120,18 @@
 				console.log(e,i)
 				var that = this;
 				var datas ={"g_id":e,"ut_id":i};
-				uni.getStorage({
-					key: 'token',
-					success: function (res) {
-						var getres = res.data;
-						uni.request({
-							url: App.entrusBuyList,
-							method: 'POST',
-							header: {'Authorization':getres},
-							data:datas,
-							success: (res) => {
-								console.log(res.data);
-								that.details=res.data.data;
-								that.heji=that.valnums*that.details.ut_price;
-							}
-						});
+				
+				this.sendRequest({
+					url :App.entrusBuyList,
+					method:'POST',
+					data:datas,
+					success : function(res){
+						console.log("getchannel success:" + JSON.stringify(res));
+						that.details=res.data;
+						that.heji=that.valnums*that.details.ut_price;
+					},
+					fail:function(e){
+						console.log("getchannel  fail:" + JSON.stringify(e));
 					}
 				});
 				this.bottomPopup = true;
@@ -156,30 +148,27 @@
 				var that = this;
 				var datas ={"g_id":a,"ut_id":b,"entry_num":that.valnums};
 				console.log(that.valnums)
-				uni.getStorage({
-					key: 'token',
-					success: function (res) {
-						var getres = res.data;
-						uni.request({
-							url: App.entrusBuy,
-							method: 'POST',
-							header: {'Authorization':getres},
-							data:datas,
-							success: (res) => {
-								console.log(res);
-								// that.details=res.data.data;
-								this.bottomPopup = false;
-								uni.showToast({
-									icon: 'none',
-									title: res.data.msg
-								});
-								setTimeout(function(){
-									uni.redirectTo({
-										url:'EntrusBuyList'
-									})
-								},1000)
-							}
+				
+				this.sendRequest({
+					url :App.entrusBuy,
+					method:'POST',
+					data:datas,
+					success : function(res){
+						console.log("getchannel success:" + JSON.stringify(res));
+						// that.details=res.data.data;
+						this.bottomPopup = false;
+						uni.showToast({
+							icon: 'none',
+							title: res.data.msg
 						});
+						setTimeout(function(){
+							uni.redirectTo({
+								url:'EntrusBuyList'
+							})
+						},1000)
+					},
+					fail:function(e){
+						console.log("getchannel  fail:" + JSON.stringify(e));
 					}
 				});
 				this.bottomPopup = false;

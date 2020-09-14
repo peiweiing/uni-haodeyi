@@ -1,6 +1,6 @@
 <script>
 // 域名
-	// const hostname= "http://api.gdyingshi.cn/api/"
+	 // const hostname= "http://api.gdyingshi.cn/api/"
 	const hostname= "http://api.lovehou.com/api/"
 // 版本更新
 	const getversion = hostname+"getversion";
@@ -91,6 +91,58 @@ export default {
 		
 	onLaunch: function() {
 		let that = this;
+		
+		let current_ver = 100;
+		uni.request({
+			url: getversion,
+			method: 'POST',
+			success: (res) => {
+				console.log(res);
+				if(current_ver<res.data.data.current_ver){
+					console.log(res.data.data.apk_url)
+					uni.showModal({
+						title: '提示',
+						content: '检测到新的版本，是否更新',
+						success: function (ok) {
+							if (ok.confirm) {
+								uni.downloadFile({
+									url: res.data.data.apk_url,
+									success: (downloadResult) => {
+										console.log(downloadResult)
+										if (downloadResult.statusCode === 200) {
+											plus.runtime.install(downloadResult.tempFilePath, {
+												force: true
+											}, function() {
+												plus.nativeUI.toast('更新成功');
+												plus.runtime.restart();
+											}, function(e) {
+												plus.nativeUI.toast('更新失败');
+											});
+										}
+									}
+								});
+								// plus.runtime.openURL(res.data.data.apk_url)
+								// that.tui.href(res.data.data.apk_url)
+								console.log('用户点击确定');
+								console.log(res.data.data.apk_url);
+							} else if (ok.cancel) {
+								console.log('用户点击取消');
+							}
+						},
+					});
+				}
+			},
+			fail:(err)=>{
+				uni.showToast({
+					title: '数据加载失败，请检查网络是否正常',
+					icon: 'none'
+				});
+			}
+		});
+		
+		
+		
+		
 		// #ifdef APP-PLUS
 		/* 5+环境锁定屏幕方向 */
 		plus.screen.lockOrientation('portrait-primary'); //锁定
@@ -145,44 +197,75 @@ export default {
 		// }
 		// #endif
 	},
-	onShow: function() {
-		uni.getStorage({
-			key: 'token',
-			success: function (res) {
-				console.log(res)
-				if(res.data.status==401){
-					uni.showModal({
-					    title: '提示',
-					    content: '登录已过期，请重新登录',
-					    success: function (res) {
-					        if (res.confirm) {
-								uni.reLaunch({
-									url: 'pages/login/login',
-								})
-					            console.log('用户点击确定');
-					        } else if (res.cancel) {
-								uni.showToast({
-								    title: '10秒后自动跳转至登录页面',
-								    duration: 2000
-								});
-								setTimeout(function(){
-									uni.reLaunch({
-										url: 'pages/login/login',
-									})
-								},10000)
-					            console.log('用户点击取消');
-					        }
-					    }
-					});
-				}
-			},
-			fail:(err)=>{
-				console.log(err)
-				uni.reLaunch({
-					url: 'pages/login/login',
-				})
+	onLoad() {
+		global.isLogin = function(){
+		try{
+			var token  = uni.getStorage('token');
+			if(token){
+				
 			}
-		})
+		}catch(e){
+			//TODO handle the exception
+		}
+		if(token == ''){
+			return false;
+		}else{
+			return token;
+		}};
+	},
+	onShow: function() {
+		// uni.getStorage({
+		// 	key: 'token',
+		// 	success: function (res) {
+		// 		let tokens =res;
+		// 		console.log(tokens)
+				
+		// 		uni.request({
+		// 			url: App.list,
+		// 			method: 'POST',
+		// 			header: {'Authorization':tokens},
+		// 			success: (res) => {
+		// 				if(res.data.status==401){
+		// 					uni.showModal({
+		// 						title: '提示',
+		// 						content: '登录已过期，请重新登录',
+		// 						success: function (res) {
+		// 							if (res.confirm) {
+		// 								uni.reLaunch({
+		// 									url: 'pages/login/login',
+		// 								})
+		// 								console.log('用户点击确定');
+		// 							} else if (res.cancel) {
+		// 								uni.showToast({
+		// 									title: '10秒后自动跳转至登录页面',
+		// 									duration: 2000
+		// 								});
+		// 								setTimeout(function(){
+		// 									uni.reLaunch({
+		// 										url: 'pages/login/login',
+		// 									})
+		// 								},10000)
+		// 								console.log('用户点击取消');
+		// 							}
+		// 						}
+		// 					});
+		// 				}
+		// 			},
+		// 			fail:(err)=>{
+		// 				uni.showToast({
+		// 					title: '数据加载失败，请检查网络是否正常',
+		// 					icon: 'none'
+		// 				});
+		// 			}
+		// 		});
+		// 	},
+		// 	fail:(err)=>{
+		// 		console.log(err)
+		// 		uni.reLaunch({
+		// 			url: 'pages/login/login',
+		// 		})
+		// 	}
+		// })
 	},
 	onHide: function() {
 		//console.log('App Hide')

@@ -19,11 +19,11 @@
 
 		<!--banner-->
 		<view class="tui-banner-swiper">
-			<swiper :autoplay="true" :interval="5000" :duration="150" :circular="true" :style="{ height: scrollH + 'px' }"
-			 @change="bannerChange">
+			<swiper :autoplay="true" :interval="5000" :duration="150" :circular="true"
+			 @change="bannerChange" style="height: inherit;">
 				<block v-for="(item, index) in module.g_slider_pic" :key="index">
 					<swiper-item :data-index="index" @tap.stop="previewImage">
-						<image :src="item" class="tui-slide-image" :style="{ height: scrollH + 'px' }" />
+						<image :src="item" class="tui-slide-image" />
 					</swiper-item>
 				</block>
 			</swiper>
@@ -196,6 +196,7 @@ import App from '../../App.vue'
 					'../../static/img/05.jpg',
 				],
 				bannerIndex: 1,
+				detailid:'',
 				topMenu: [
 					{icon: 'message',text: '消息',size: 26,badge: 3},
 					{icon: 'home',text: '首页',size: 23,badge: 0},
@@ -214,7 +215,7 @@ import App from '../../App.vue'
 		},
 		onLoad: function(options) {
 			let that =this;
-			var detailid =options.id;
+			that.detailid =options.id;
 			let obj = {};
 			// #ifdef MP-WEIXIN
 			obj = wx.getMenuButtonBoundingClientRect();
@@ -237,23 +238,39 @@ import App from '../../App.vue'
 				});
 			}, 0);
 			
-			uni.getStorage({
-			    key: 'token',
-			    success: function (res) {
-			        console.log(res.data);
-					uni.request({
-					    url: App.detail,
-						method: 'POST',
-					    header: {'Authorization':res.data},
-						data: {"g_id":detailid},
-					    success: (res) => {
-					        console.log(res);
-							that.module=res.data.data;
-					    }
-					});
-			    }
+		},
+		onShow() {
+			let that =this;
+			this.sendRequest({
+				url :App.detail,
+				method:'POST',
+				data: {"g_id":that.detailid},
+				success : function(res){
+					console.log("getchannel success:" + JSON.stringify(res));
+				   that.module=res.data;
+				   console.log(that.module)
+				   console.log(that.module.g_slider_pic)
+				},
+				fail:function(e){
+					console.log("getchannel  fail:" + JSON.stringify(e));
+				}
 			});
-			
+			// uni.getStorage({
+			//     key: 'token',
+			//     success: function (res) {
+			//         console.log(res.data);
+			// 		uni.request({
+			// 		    url: App.detail,
+			// 			method: 'POST',
+			// 		    header: {'Authorization':res.data},
+			// 			data: {"g_id":detailid},
+			// 		    success: (res) => {
+			// 		        console.log(res);
+			// 				that.module=res.data.data;
+			// 		    }
+			// 		});
+			//     }
+			// });
 		},
 		methods: {
 			bannerChange: function(e) {
@@ -322,33 +339,50 @@ import App from '../../App.vue'
 				var that =this;
 				that.disabled=true;
 				console.log(that.disabled)
-				uni.getStorage({
-				    key: 'token',
-				    success: function (res) {
-				        console.log(res.data);
-						uni.request({
-						    url: App.spotpay,
-							method: 'POST',
-						    header: {'Authorization':res.data},
-							data: {"g_id":e},
-						    success: (res) => {
-						        console.log(res);
-								uni.showToast({
-									icon: 'none',
-									title: res.data.msg
-								});
-								setTimeout(function(){
-									that.module.g_salevol=res.data.data.g_salevol
-									that.module.total_inv=res.data.data.total_inv
-								},1000)
-						    },
-							complete: ()=> {
-								console.log('执行了')
-								that.disabled=false;
-							},
-						});
-				    }
-				});
+				if(that.user!=1){
+					uni.showModal({
+						title: '提示',
+						content: '请先实名认证',
+						success: function (res) {
+							if (res.confirm) {
+								uni.navigateTo({
+									url: '../user/realName',
+								})
+								console.log('用户点击确定');
+							} else if (res.cancel) {
+								console.log('用户点击取消');
+							}
+						},
+					});
+				}else{
+					uni.getStorage({
+						key: 'token',
+						success: function (res) {
+							console.log(res.data);
+							uni.request({
+								url: App.spotpay,
+								method: 'POST',
+								header: {'Authorization':res.data},
+								data: {"g_id":e},
+								success: (res) => {
+									console.log(res);
+									uni.showToast({
+										icon: 'none',
+										title: res.data.msg
+									});
+									setTimeout(function(){
+										that.module.g_salevol=res.data.data.g_salevol
+										that.module.total_inv=res.data.data.total_inv
+									},1000)
+								},
+								complete: ()=> {
+									console.log('执行了')
+									that.disabled=false;
+								},
+							});
+						}
+					});
+				}
 				// this.popupShow = false;
 			},
 			coupon() {
@@ -460,6 +494,7 @@ import App from '../../App.vue'
 
 	.tui-banner-swiper {
 		position: relative;
+		height: 800rpx;
 	}
 	.tui-video__box{
 		width: 166rpx;
@@ -497,6 +532,7 @@ import App from '../../App.vue'
 
 	.tui-slide-image {
 		width: 100%;
+		height: inherit;
 		display: block;
 	}
 

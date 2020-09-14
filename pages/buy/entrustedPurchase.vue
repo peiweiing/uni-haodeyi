@@ -1,147 +1,165 @@
 <template>
-	<view class="container">
-		<view class="title_2">
-			请选择商品
+	<view class="content">
+		<!-- <tui-loadmore
+		:index="3"
+		type="primary"
+		v-if="!isSuccess"
+		></tui-loadmore> -->
+		<!-- <view class="error" v-if="isError">
+			<tui-no-data
+			imgUrl="/static/images/toast/img_nodata.png"
+			>
+				暂无数据
+			</tui-no-data>
+		</view> -->
+		<view class="FY FY-c FX-c" v-if="isError" style="font-size: 16px;height: calc(100vh);">
+			<tui-icon name="nodata" :size="60" color="#999"></tui-icon>
+			暂无内容
 		</view>
-		<tui-card
-		class="tui-card"
-		:image="bottomList.img ? bottomList.img[0].img : ''"
-		:title="bottomList.img ? bottomList.img[0].title : ''"
-		:tag="bottomList.img ? bottomList.img[0].tag : ''"
-		@click="popup"
-		>
-			<template v-slot:footer>
-				<view class="tui-default">
-					<view class="">
-						价格：￥{{bottomList.g_price}}
-					</view>
-					<view class="">
-						交易量：{{(bottomList.g_salevol).toFixed(2)}}
-					</view>
-					<view class="">
-						交易金额：￥{{(bottomList.g_salevol).toFixed(2)}}
-					</view>
-				</view>
-			</template>
-		</tui-card>
-		<view class="title_2">
-			请填写购买信息
-		</view>
-		<view class="form_information">
-			<form @submit="formSubmit">
-				<tui-list-cell :hover="false" unlined>
-					<view class="tui-line-cell">
-						<view class="tui-title">价格区间：</view>
-						<input
-						placeholder-class="tui-phcolor"
-						disabled class="tui-input"
-						:placeholder="priceRange(bottomList.g_minprice, bottomList.g_maxprice)"
-						maxlength="50"
-						type="digit"
-						/>
-					</view>
-				</tui-list-cell>
-				<tui-list-cell :hover="false">
-					<view class="tui-line-cell">
-						<view class="tui-title">买入价格：</view>
-						<input
-						v-model="price"
-						placeholder-class="tui-phcolor"
-						class="tui-input"
-						name="amount"
-						placeholder="请输入买入价格"
-						maxlength="50"
-						type="text"
-						/>
-					</view>
-				</tui-list-cell>
-				<tui-list-cell :hover="false">
-					<view class="tui-line-cell">
-						<view class="tui-title">买入数量：</view>
-						<input
-						v-model="num"
-						placeholder-class="tui-phcolor"
-						class="tui-input"
-						name="amount2"
-						placeholder="请输入买入数量"
-						maxlength="50"
-						type="text"
-						/>
-					</view>
-				</tui-list-cell>
-				<view class="confirm_box">
-					<button
-					class="tui-button-primary"
-					hover-class="tui-button-hover"
-					formType="submit"
-					type="primary"
-					@click="affirm(bottomList.g_id)"
-					>
-						确 认 委 托 买 入
-					</button>
-				</view>
-			</form>
-		</view>
-		<!--底部分享弹窗-->
-		<tui-bottom-popup :show="popupShow" @close="popup">
-			<view class="tui-share">
-				<radio-group @change="radioChange">
-					<scroll-view scroll-y class="tui-share-content">
-						<view
-						class="share-content-list"
-						v-for="(item, index) in bottomLists"
-						:key="index"
-						@click="clickBottomList(index)"
-						>
-							<tui-card
-							class="tui-card-share"
-							:image="item.img ? item.img[0].img : ''"
-							:title="item.img ? item.img[0].title : ''"
-							:tag="item.img ? item.img[0].tag : ''"
-							@click="popup"
-							>
-								<template v-slot:footer>
-									<view class="tui-default">
-										<view class="">
-											价格:￥{{item.g_price}}
-										</view>
-										<view class="">
-											交易量:{{item.g_salevol}}
-										</view>
-										<view class="">
-											交易金额:￥{{item.totalpay}}
-										</view>
-									</view>
-								</template>
-							</tui-card>
-							<label class="tui-checkbox">
-								<tui-icon
-								name="circle"
-								:size="30"
-								:color="'#9E2036'"
-								@click="popup"
-								v-if="index !== current"
-								></tui-icon>
-								<tui-icon
-								name="circle-fill"
-								:size="30"
-								:color="'#9E2036'"
-								@click="popup"
-								v-if="index === current"
-								></tui-icon>
-							</label>
-						</view>
-					</scroll-view>
-				</radio-group>
-				<view
-				class="tui-btn-cancle"
-				@tap="popup"
-				>
-					取消
-				</view>
+		<view class="container">
+			<view class="title_2" v-if="isSuccess">
+				请选择商品
 			</view>
-		</tui-bottom-popup>
-		<!--底部分享弹窗-->
+			<tui-card
+			class="tui-card"
+			:image="bottomList.img ? bottomList.img[0].img : ''"
+			:title="bottomList.img ? bottomList.img[0].title : ''"
+			:tag="bottomList.img ? bottomList.img[0].tag : ''"
+			@click="popup"
+			>
+				<template v-slot:footer>
+					<view class="tui-default">
+						<view class="">
+							价格：￥{{bottomList.g_price}}
+						</view>
+						<view class="">
+							交易量：{{(bottomList.g_salevol).toFixed(2)}}
+						</view>
+						<view class="">
+							交易金额：￥{{(bottomList.totalpay).toFixed(2)}}
+						</view>
+					</view>
+				</template>
+			</tui-card>
+			<view class="title_2" v-if="isSuccess">
+				请填写购买信息
+			</view>
+			<view class="form_information" v-if="isSuccess">
+				<form @submit="formSubmit">
+					<tui-list-cell :hover="false" unlined>
+						<view class="tui-line-cell">
+							<view class="tui-title">价格区间：</view>
+							<input
+							placeholder-class="tui-phcolor"
+							disabled class="tui-input"
+							:placeholder="priceRange(bottomList.g_minprice, bottomList.g_maxprice)"
+							maxlength="50"
+							type="digit"
+							/>
+						</view>
+					</tui-list-cell>
+					<tui-list-cell :hover="false">
+						<view class="tui-line-cell">
+							<view class="tui-title">买入价格：</view>
+							<input
+							v-model="price"
+							placeholder-class="tui-phcolor"
+							class="tui-input"
+							name="amount"
+							placeholder="请输入买入价格"
+							maxlength="50"
+							type="text"
+							/>
+						</view>
+					</tui-list-cell>
+					<tui-list-cell :hover="false">
+						<view class="tui-line-cell">
+							<view class="tui-title">买入数量：</view>
+							<input
+							v-model="num"
+							placeholder-class="tui-phcolor"
+							class="tui-input"
+							name="amount2"
+							placeholder="请输入买入数量"
+							maxlength="50"
+							type="text"
+							/>
+						</view>
+					</tui-list-cell>
+					<view class="confirm_box">
+						<button
+						class="tui-button-primary"
+						hover-class="tui-button-hover"
+						formType="submit"
+						type="primary"
+						@click="affirm(bottomList.g_id)"
+						>
+							确 认 委 托 买 入
+						</button>
+					</view>
+				</form>
+			</view>
+			<!--底部分享弹窗-->
+			<tui-bottom-popup :show="popupShow" @close="popup">
+				<view class="tui-share">
+					<radio-group @change="radioChange">
+						<scroll-view scroll-y class="tui-share-content">
+							<view
+							class="share-content-list"
+							v-for="(item, index) in bottomLists"
+							:key="index"
+							@click="clickBottomList(index)"
+							>
+								<tui-card
+								class="tui-card-share"
+								:image="item.img ? item.img[0].img : ''"
+								:title="item.img ? item.img[0].title : ''"
+								:tag="item.img ? item.img[0].tag : ''"
+								@click="popup"
+								>
+									<template v-slot:footer>
+										<view class="tui-default">
+											<view class="">
+												价格:￥{{item.g_price}}
+											</view>
+											<view class="">
+												交易量:{{item.g_salevol}}
+											</view>
+											<view class="">
+												交易金额:￥{{item.totalpay}}
+											</view>
+										</view>
+									</template>
+								</tui-card>
+								<label class="tui-checkbox">
+									<tui-icon
+									name="circle"
+									:size="30"
+									:color="'#9E2036'"
+									@click="popup"
+									v-if="index !== current"
+									></tui-icon>
+									<tui-icon
+									name="circle-fill"
+									:size="30"
+									:color="'#9E2036'"
+									@click="popup"
+									v-if="index === current"
+									></tui-icon>
+								</label>
+							</view>
+						</scroll-view>
+					</radio-group>
+					<view
+					class="tui-btn-cancle"
+					@tap="popup"
+					>
+						取消
+					</view>
+				</view>
+			</tui-bottom-popup>
+			<!--底部分享弹窗-->
+		</view>
 	</view>
 </template>
 
@@ -155,50 +173,87 @@
 				num:'',
 				popupShow: false,
 				bottomLists: [],
-				bottomList: {
-					g_code: "0000000",
-					g_id: 0,
-					g_pic: "",
-					g_price: "00.00",
-					g_salevol: 0,
-					g_title: "",
-				},
+				bottomList: {},
 				current: 0,
-				isConfirm: false
+				isConfirm: false,
+				isError: false,
+				isSuccess: false
 			}
 		},
 		onLoad() {
 			var that =this;
-			uni.getStorage({
-				key: 'token',
-				success: function (res) {
-					var getres = res.data;
-					uni.request({
+					that.sendRequest({
 						url: App.entrustlst,
 						method: 'POST',
-						header: {'Authorization':getres},
 						success: (res) => {
 							console.log(res)
-							if (res.data.status === 200) {
-								if (res.data.data.length !== 0) {
-									that.bottomList = res.data.data[0];
-									that.bottomLists = res.data.data;
+							if (res.status === 200) {
+								if (res.data.length !== 0) {
+									that.bottomList = res.data[0];
+									that.bottomLists = res.data;
+									if (that.bottomLists.length === 0) {
+										that.isError = true
+										uni.showToast({
+											title: "暂无数据",
+											icon: "none"
+										})
+									} else {
+										that .isSuccess = true
+									}
 								} else {
+									that.isError = true
 									uni.showToast({
-										title: "无数据",
+										title: "暂无数据",
 										icon: "none"
 									})
 								}
 							} else {
+								that.isError = true
 								uni.showToast({
 									title: res.data.msg,
 									icon: "none"
 								})
 							}
+						},
+						fail:function(e){
+							console.log("getchannel  fail:" + JSON.stringify(e));
 						}
 					});
-				}
-			})
+					// uni.request({
+					// 	url: App.entrustlst,
+					// 	method: 'POST',
+					// 	header: {'Authorization':getres},
+					// 	success: (res) => {
+					// 		console.log(res)
+					// 		if (res.data.status === 200) {
+					// 			if (res.data.data.length !== 0) {
+					// 				that.bottomList = res.data.data[0];
+					// 				that.bottomLists = res.data.data;
+					// 				if (that.bottomLists.length === 0) {
+					// 					that.isError = true
+					// 					uni.showToast({
+					// 						title: "暂无数据",
+					// 						icon: "none"
+					// 					})
+					// 				} else {
+					// 					that .isSuccess = true
+					// 				}
+					// 			} else {
+					// 				that.isError = true
+					// 				uni.showToast({
+					// 					title: "暂无数据",
+					// 					icon: "none"
+					// 				})
+					// 			}
+					// 		} else {
+					// 			that.isError = true
+					// 			uni.showToast({
+					// 				title: res.data.msg,
+					// 				icon: "none"
+					// 			})
+					// 		}
+					// 	}
+					// });
 		},
 		computed: {
 			priceRange() {
@@ -248,19 +303,14 @@
 			affirm(e){
 				if (this.isConfirm) {
 					var that =this;
-					uni.getStorage({
-						key: 'token',
-						success: function (res) {
-							var getres = res.data;
 							var datas={'g_id':e,'num':that.num,'price':that.price,}
-							uni.request({
+							that.sendRequest({
 								url: App.entrustpurchase,
 								method: 'POST',
-								header: {'Authorization':getres},
 								data:datas,
 								success: (res) => {
-									console.log("确认委托买入" ,res.data)
-									that.productList = res.data;
+									console.log("确认委托买入" ,res)
+									that.productList = res;
 									uni.showToast({
 										title: that.productList.msg+'!',
 										icon: "none"
@@ -268,10 +318,28 @@
 									that.price = ""
 									that.num = ""
 									this.isConfirm = false
+								},
+								fail:function(e){
+									console.log("getchannel  fail:" + JSON.stringify(e));
 								}
 							});
-						}
-					})
+							// uni.request({
+							// 	url: App.entrustpurchase,
+							// 	method: 'POST',
+							// 	header: {'Authorization':getres},
+							// 	data:datas,
+							// 	success: (res) => {
+							// 		console.log("确认委托买入" ,res.data)
+							// 		that.productList = res.data;
+							// 		uni.showToast({
+							// 			title: that.productList.msg+'!',
+							// 			icon: "none"
+							// 		});
+							// 		that.price = ""
+							// 		that.num = ""
+							// 		this.isConfirm = false
+							// 	}
+							// });
 				}
 			},
 			popup: function() {
@@ -300,9 +368,34 @@
 </script>
 
 <style lang="scss" scoped>
-	page{
+	.content{
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 100%;
 		background-color: #EEE;
 	}
+	// /deep/ .tui-loadmore{
+	// 	margin: 0;
+	// 	height: 44rpx;
+	// 	font-size: 30rpx;
+	// 	color: #999;
+	// 	position: fixed;
+	// 	left: 50%;
+	// 	top: 50%;
+	// 	z-index: 1;
+	// 	margin-top: -20rpx;
+	// 	margin-left: -180rpx;
+	// }
+	// .error{
+	// 	position: fixed;
+	// 	top: 0;
+	// 	bottom: 0;
+	// 	left: 0;
+	// 	right: 0;
+	// 	z-index: 1;
+	// 	background-color: #EEE;
+	// }
 	.container {
 		padding: 30rpx;
 	}

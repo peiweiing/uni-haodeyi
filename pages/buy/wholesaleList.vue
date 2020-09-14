@@ -23,7 +23,7 @@
 			</view>
 			<!--商品列表-->
 			<view class="FY FY-c FX-c" v-if="isShow==false" style="font-size: 16px;width: 100%;min-height: calc(80vh);">
-				<tui-icon name="nodata" size="60" color="#999"></tui-icon>
+				<tui-icon name="nodata" :size="60" color="#999"></tui-icon>
 				暂无内容
 			</view>
 		</view>
@@ -70,7 +70,7 @@
 				   <tui-list-cell :hover="false">
 				    <view class="tui-line-cell">
 				     <view class="tui-title">批发数量：</view>
-						<text>{{productLists.g_salevol}}</text>
+						<text>{{productLists.g_pfnum}}</text>
 				    </view>
 				   </tui-list-cell>
 				   <tui-list-cell :hover="false">
@@ -120,59 +120,56 @@
 				loadding: false,
 				pullUpOn: true,
 				productLists:'',
-				valnums:1,
+				valnums:0,
 				heji:'',
 			}
 		},
-		onLoad() {
+		onShow() {
 			var that =this;
-			uni.getStorage({
-				key: 'token',
-				success: function (res) {
-					var getres = res.data;
-					uni.request({
-						url: App.wholegoodslist,
-						method: 'POST',
-						header: {'Authorization':getres},
-						success: (res) => {
-							if(res.data.data.length){
-								that.isShow = true;
-							}else{
-								that.isShow = false;
-							}
-							console.log(res.data);
-							that.productList=res.data.data;
-						},
-						fail:(err)=>{
-							that.isShow=false;
-						}
-					});
+			this.sendRequest({
+				url :App.wholegoodslist,
+				method:'POST',
+				success : function(res){
+					if(res.data.length){
+						that.isShow = true;
+					}else{
+						that.isShow = false;
+					}
+					console.log("getchannel success:" + JSON.stringify(res));
+				   that.productList=res.data;
+				},
+				fail:function(e){
+					that.isShow=false;
+					console.log("getchannel  fail:" + JSON.stringify(e));
 				}
-			})
+			});
 		},
 		methods: {
 			showModal: function(e) {
 				console.log(e)
 				var that = this;
 				var datas ={"g_id":e};
-				uni.getStorage({
-					key: 'token',
-					success: function (res) {
-						var getres = res.data;
-						uni.request({
-						url: App.getgoodsDetail,
-							method: 'POST',
-							header: {'Authorization':getres},
-							data:datas,
-							success: (res) => {
-								// that.debool=true;
-								console.log(res.data);
-								that.productLists=res.data.data[0];
-								that.heji=that.valnums*that.productLists.g_pfprice;
-							}
-						});
+				that.valnums=0;
+				this.sendRequest({
+					url :App.getgoodsDetail,
+					method:'POST',
+					data:datas,
+					success : function(res){
+						if(res.data.length){
+							that.isShow = true;
+						}else{
+							that.isShow = false;
+						}
+						console.log("getchannel success:" + JSON.stringify(res));
+						that.productLists=res.data[0];
+						that.heji=that.valnums*that.productLists.g_pfprice;
+					},
+					fail:function(e){
+						that.isShow=false;
+						console.log("getchannel  fail:" + JSON.stringify(e));
 					}
 				});
+				
 				that.bottomPopup = true;
 				console.log("卖出", Math.random())
 			},
@@ -186,34 +183,22 @@
 				console.log(a)
 				var that = this;
 				var datas ={"g_id":a,"num":that.valnums};
-				console.log(that.valnums)
-				uni.getStorage({
-					key: 'token',
-					success: function (res) {
-						var getres = res.data;
-						uni.request({
-							url: App.Wholesale,
-							method: 'POST',
-							header: {'Authorization':getres},
-							data:datas,
-							success: (res) => {
-								console.log(res);
-								// that.details=res.data.data;
-								that.bottomPopup = false;
-								uni.showToast({
-									icon: 'none',
-									title: res.data.msg
-								});
-								// setTimeout(function(){
-								// 	// uni.redirectTo({
-								// 	// 	url:'entrusSellList'
-								// 	// })
-								// },1000)
-							}
+				this.sendRequest({
+					url :App.Wholesale,
+					method:'POST',
+					data:datas,
+					success : function(res){
+						that.bottomPopup = false;
+						uni.showToast({
+							icon: 'none',
+							title: res.data.msg
 						});
+					},
+					fail:function(e){
+						that.isShow=false;
+						console.log("getchannel  fail:" + JSON.stringify(e));
 					}
 				});
-				// this.bottomPopup = false;
 			},
 			inputChanges(e){
 				console.log(e)
@@ -226,16 +211,16 @@
 				if(that.valnums>1){
 					that.valnums--;
 				}else{
-					that.valnums=1
+					that.valnums=0
 				}
 				that.heji=that.valnums*that.productLists.g_pfprice;
 			},
 			valnumas(){
 				var that = this;
-				if(that.valnums<that.productLists.g_salevol){
+				if(that.valnums<that.productLists.g_pfnum){
 					that.valnums++;
 				}else{
-					that.valnums=that.productLists.g_salevol
+					that.valnums=that.productLists.g_pfnum
 				}
 				that.heji=that.valnums*that.productLists.g_pfprice;
 			},

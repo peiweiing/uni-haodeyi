@@ -34,7 +34,7 @@
 			</view>
 			
 			<view class="FY FY-c FX-c" v-if="isShow1==false" style="font-size: 16px;height: calc(80vh);">
-				<tui-icon name="nodata" size="60" color="#999"></tui-icon>
+				<tui-icon name="nodata" :size="60" color="#999"></tui-icon>
 				暂无内容
 			</view>
 		</view>
@@ -65,7 +65,7 @@
 			</view>
 			
 			<view class="FY FY-c FX-c" v-if="isShow2==false" style="font-size: 16px;height: calc(80vh);">
-				<tui-icon name="nodata" size="60" color="#999"></tui-icon>
+				<tui-icon name="nodata" :size="60" color="#999"></tui-icon>
 				暂无内容
 			</view>
 		</view>
@@ -94,135 +94,118 @@
 				]
 			}
 		},
-		onLoad() {
+		onShow() {
 			var that =this;
-			uni.getStorage({
-				key: 'token',
-				success: function (res) {
-					var getres = res.data;
-					uni.request({
-						url: App.mygetEntrusList,
-						method: 'POST',
-						header: {'Authorization':getres},
-						data:{'type':1},
-						success: (res) => {
-							if(res.data.data.length){
-								that.isShow1 = true;
-							}else{
-								that.isShow1 = false;
-							}
-							console.log(res.data);
-							that.dataList1=res.data.data;
-						},
-						fail:(err)=>{
-							that.isShow1=false;
-						}
-					});
-					uni.request({
-						url: App.mygetEntrusList,
-						method: 'POST',
-						header: {'Authorization':getres},
-						data:{'type':2},
-						success: (res) => {
-							if(res.data.data.length){
-								that.isShow2 = true;
-							}else{
-								that.isShow2 = false;
-							}
-							console.log(res.data);
-							that.dataList2=res.data.data;
-						},
-						fail:(err)=>{
-							that.isShow2=false;
-						}
-					});
+			
+			this.sendRequest({
+				url :App.mygetEntrusList,
+				method:'POST',
+				data:{'type':1},
+				success : function(res){
+					if(res.data.length){
+						that.isShow1 = true;
+					}else{
+						that.isShow1 = false;
+					}
+					console.log("getchannel success:" + JSON.stringify(res));
+					that.dataList1=res.data.data;
+				},
+				fail:function(e){
+					that.isShow1=false;
+					console.log("getchannel  fail:" + JSON.stringify(e));
 				}
-			})
+			});
+			this.sendRequest({
+				url :App.mygetEntrusList,
+				method:'POST',
+				data:{'type':2},
+				success : function(res){
+					if(res.data.length){
+						that.isShow2 = true;
+					}else{
+						that.isShow2 = false;
+					}
+					console.log("getchannel success:" + JSON.stringify(res));
+					that.dataList2=res.data.data;
+				},
+				fail:function(e){
+					that.isShow2=false;
+					console.log("getchannel  fail:" + JSON.stringify(e));
+				}
+			});
 		},
 		methods: {
+			getList(type){	
+				var that =this;
+				this.sendRequest({
+					url :App.mygetEntrusList,
+					method:'POST',
+					data:{'type':type},
+					success : function(res){
+						if(res.data.length){
+							type==1? that.isShow1 = true: that.isShow2 = true;
+						}else{
+							type==1? that.isShow1 = true: that.isShow2 = true;
+						}
+						console.log(res.data);
+						type==1? that.dataList1=res.data : that.dataList2=res.data;
+					},
+					fail:function(e){
+						type==1? that.isShow1 = true: that.isShow2 = true;
+						console.log("getchannel  fail:" + JSON.stringify(e));
+					}
+				});
+			},
 			changeTab(e) {
 				this.currentTab = e.index
 			},
 			clickButton(e) {
 				var that = this;
-				uni.getStorage({
-					key: 'token',
-					success: function (res) {
-						var getres = res.data;
-						uni.request({
-							url: App.revokePurchase,
-							method: 'POST',
-							header: {'Authorization':getres},
-							data:{'ut_id':e},
-							success: (res) => {
-								console.log(res)
-								uni.showToast({
-									icon: 'none',
-									title: res.data.msg
-								})
-								uni.request({
-									url: App.mygetEntrusList,
-									method: 'POST',
-									header: {'Authorization':getres},
-									data:{'type':1},
-									success: (res) => {
-										if(res.data.data.length){
-											that.isShow1 = true;
-										}else{
-											that.isShow1 = false;
-										}
-										console.log(res.data);
-										that.dataList1=res.data.data;
-									},
-									fail:(err)=>{
-										that.isShow1=false;
-									}
-								});
-							}
-						});
+				this.sendRequest({
+					url :App.revokePurchase,
+					method:'POST',
+					data:{'ut_id':e},
+					success : function(res){
+						if(res.data.length){
+							that.isShow1 = true;
+						}else{
+							that.isShow1 = false;
+						}
+						console.log("getchannel success:" + JSON.stringify(res));
+						that.dataList1=res.data.data;
+						that.getList(1);
+					},
+					fail:function(e){
+						that.isShow1=false;
+						console.log("getchannel  fail:" + JSON.stringify(e));
 					}
-				})
+				});
+				
 				console.log(Math.random())
 			},
 			clickButtons(e) {
 				var that = this;
-				uni.getStorage({
-					key: 'token',
-					success: function (res) {
-						var getres = res.data;
-						uni.request({
-							url: App.revokeSell,
-							method: 'POST',
-							header: {'Authorization':getres},
-							data:{'ut_id':e},
-							success: (res) => {
-								console.log(res)
-								uni.showToast({
-									icon: 'none',
-									title: res.data.msg
-								})
-								uni.request({
-									url: App.mygetEntrusList,
-									method: 'POST',
-									header: {'Authorization':getres},
-									data:{'type':2},
-									success: (res) => {
-										if(res.data.data.length){
-											that.isShow2 = true;
-										}else{
-											that.isShow2 = false;
-										}
-										console.log(res.data);
-										that.dataList2=res.data.data;
-									},
-									fail:(err)=>{
-										that.isShow2=false;
-									}
-								});
-							}
-						});
+				this.sendRequest({
+					url :App.revokePurchase,
+					method:'POST',
+					data:{'ut_id':e},
+					success : function(res){
+						if(res.data.length){
+							that.isShow2 = true;
+						}else{
+							that.isShow2 = false;
+						}
+						console.log("getchannel success:" + JSON.stringify(res));
+						that.dataList2=res.data.data;
+						that.getList(2);
+					},
+					fail:function(e){
+						that.isShow2=false;
+						console.log("getchannel  fail:" + JSON.stringify(e));
 					}
-				})
+				});
+				
+				
 				console.log(Math.random())
 			}
 		},

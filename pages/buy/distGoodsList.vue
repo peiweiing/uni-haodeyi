@@ -73,31 +73,26 @@
 				pullUpOn: true
 			}
 		},
-		onLoad() {
+		onShow() {
 			var that =this;
-			uni.getStorage({
-				key: 'token',
-				success: function (res) {
-					var getres = res.data;
-					uni.request({
-						url: App.list,
-						method: 'POST',
-						header: {'Authorization':getres},
-						success: (res) => {
-							if(res.data.data.length){
-								that.isShow = true;
-							}else{
-								that.isShow = false;
-							}
-							console.log(res.data);
-							that.productList=res.data.data;
-						},
-						fail:(err)=>{
-							that.isShow=false;
-						}
-					});
+			
+			this.sendRequest({
+				url :App.list,
+				method:'POST',
+				success : function(res){
+					console.log("getchannel success:" + JSON.stringify(res));
+					if(res.data.length){
+						that.isShow = true;
+					}else{
+						that.isShow = false;
+					}
+				   that.productList=res.data;
+				},
+				fail:function(e){
+					console.log("getchannel  fail:" + JSON.stringify(e));
+					that.isShow=false;
 				}
-			})
+			});
 		},
 		methods: {
 			detail(e) {

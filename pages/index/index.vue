@@ -53,15 +53,15 @@
 						<text>排行榜</text>
 						<text class="tui-sub__desc">大家都在买</text>
 					</view>
-					<view class="tui-more__box">
+				<!-- 	<view class="tui-more__box">
 						<text>更多</text>
 						<tui-icon name="arrowright" :size="36" unit="rpx" color="#999"></tui-icon>
-					</view>
+					</view> -->
 				</view>
 				<view class="tui-new-box">
 					<view class="tui-new-item" :class="[index != 0 && index != 1 ? 'tui-new-mtop' : '']" v-for="(item, index) in newProduct"
 					 :key="index" @tap="detail(item.g_id)" v-if="isShow">
-						<image :src="'/static/images/mall/new/' + (item.type == 1 ? 'new' : 'discount') + '.png'" class="tui-new-label"></image>
+						<image :src="'/static/images/mall/new/' + (item.type == 1 ? 'new' : 'new') + '.png'" class="tui-new-label"></image>
 						<view class="tui-title-box">
 							<view class="tui-new-title">{{ item.g_title }}</view>
 							<view class="tui-new-price FY-c">
@@ -167,65 +167,126 @@
 				],
 			}
 		},
-		onLoad() {
+		onShow() {
 			var that =this;
-			uni.getStorage({
-				key: 'token',
-				success: function (res) {
-					console.log(res)
-					var getres = res.data;
-					uni.request({
-						url: App.getchannel,
-						method: 'POST',
-						header: {'Authorization':getres},
-						data:{'type':2},
-						success: (res) => {
-							console.log(res.data);
-							that.newsList=res.data.data;
-						}
-					});
-					uni.request({
-						url: App.sortgoods,
-						method: 'POST',
-						header: {'Authorization':getres},
-						success: (res) => {
-							if(res.data.data.length){
-								that.isShow = true;
-							}else{
-								that.isShow = false;
-							}
-							console.log(res.data);
-							that.newProduct=res.data.data;
-						},
-						fail:(err)=>{
-							that.isShow=false;
-						}
-					});
-					uni.request({
-						url: App.list,
-						method: 'POST',
-						header: {'Authorization':getres},
-						success: (res) => {
-							if(res.data.data.length){
-								that.isShows = true;
-							}else{
-								that.isShows = false;
-							}
-							console.log(res.data);
-							that.productList=res.data.data;
-						},
-						fail:(err)=>{
-							that.isShows=false;
-						}
-					});
+		
+			this.sendRequest({
+				url :App.getchannel,
+				data:{'type':2},
+				method:'POST',
+				success : function(res){
+					console.log("getchannel success:" + JSON.stringify(res));
+				   that.newsList=res.data;
 				},
-				fail:(err)=>{
-					console.log(err)
-					uni.reLaunch({
-						url: '../login/login',
-					})
+				fail:function(e){
+					console.log("getchannel  fail:" + JSON.stringify(e));
 				}
-			})
+			});
+			this.sendRequest({
+				url :App.sortgoods,					
+				method:'POST',
+				success : function(res){
+					console.log("getchannel success:" + JSON.stringify(res));
+				   that.newProduct=res.data;
+				},
+				fail:function(e){
+					console.log("getchannel  fail:" + JSON.stringify(e));
+				}
+			});
+			this.sendRequest({
+				url :App.list,
+				method:'POST',
+				success : function(res){
+					console.log("getchannel success:" + JSON.stringify(res));
+				   that.productList=res.data;
+				},
+				fail:function(e){
+					console.log("getchannel  fail:" + JSON.stringify(e));
+				}
+			});
+			
+			// uni.getStorage({
+			// 	key: 'token',
+			// 	success: function (res) {
+			// 		console.log(res)
+			// 		var getres = res.data;
+			// 		uni.request({
+			// 			url: 
+			// 			method: 'POST',
+			// 			header: {'Authorization':getres},
+			// 			data:,
+			// 			success: (res) => {
+			// 				console.log(res.data);
+			// 				that.newsList=res.data.data;
+			// 			}
+			// 		});
+			// 		uni.request({
+			// 			url: App.sortgoods,
+			// 			method: 'POST',
+			// 			header: {'Authorization':getres},
+			// 			success: (res) => {
+			// 				if(res.data.data.length){
+			// 					that.isShow = true;
+			// 				}else{
+			// 					that.isShow = false;
+			// 				}
+			// 				console.log(res.data);
+			// 				that.newProduct=res.data.data;
+			// 			},
+			// 			fail:(err)=>{
+			// 				that.isShow=false;
+			// 			}
+			// 		});
+			// 		uni.request({
+			// 			url: App.list,
+			// 			method: 'POST',
+			// 			header: {'Authorization':getres},
+			// 			success: (res) => {
+			// 				if(res.data.data.length){
+			// 					that.isShows = true;
+			// 				}else{
+			// 					that.isShows = false;
+			// 				}
+			// 				console.log(res.data);
+			// 				that.productList=res.data.data;
+			// 				if(res.data.status==401){
+			// 					uni.showModal({
+			// 						title: '提示',
+			// 						content: '登录已过期，请重新登录',
+			// 						success: function (res) {
+			// 							if (res.confirm) {
+			// 								uni.reLaunch({
+			// 									url: 'pages/login/login',
+			// 								})
+			// 								console.log('用户点击确定');
+			// 							} else if (res.cancel) {
+			// 								uni.showToast({
+			// 									title: '10秒后自动跳转至登录页面',
+			// 									duration: 2000
+			// 								});
+			// 								setTimeout(function(){
+			// 									uni.reLaunch({
+			// 										url: 'pages/login/login',
+			// 									})
+			// 								},10000)
+			// 								console.log('用户点击取消');
+			// 							}
+			// 						}
+			// 					});
+			// 				}
+			// 			},
+			// 			fail:(err)=>{
+			// 				that.isShows=false;
+			// 			}
+			// 		});
+			// 	},
+			// 	fail:(err)=>{
+			// 		console.log(err)
+			// 		uni.reLaunch({
+			// 			url: '../login/login',
+			// 		})
+			// 	}
+			// })
 		},
 		methods: {	
 			// change: function(e) {
